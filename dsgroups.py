@@ -167,8 +167,8 @@ for recordid in dsMapLineIdByRecordId:
         # The main group record
         if csvoutfile != "":
             write_csv([group.RecordId, group.Name, str(group.GUID),
-                str(group.SID), CdsGetDSTimeStampStr(group.WhenCreated),
-                CdsGetDSTimeStampStr(group.WhenChanged),
+                str(group.SID), dsGetDSTimeStampStr(group.WhenCreated),
+                dsGetDSTimeStampStr(group.WhenChanged),
                 "", "", "" ])
         
         if grpdump == True:
