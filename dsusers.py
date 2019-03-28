@@ -430,9 +430,9 @@ if grpdump == True:
             groups.append(dsGroup(db, recordid))
 
 if csvoutfile != "":
-    write_csv(["Record ID", "User name", "User principal name", "SAM account name",
+    write_csv(["DS Record ID", "User name", "User principal name", "SAM account name",
             "SAM account type", "GUID", "SID", 
-            "When created", "When changed",
+            "Created", "Changed",
             "Account expires", "Password last set",
             "Last logon", "Last logon timestamp",
             "Bad password time", "Logon count", "Bad password count", "User Account Control",

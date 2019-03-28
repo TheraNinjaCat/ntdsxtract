@@ -83,7 +83,7 @@ def processComputer(computer):
     if csvoutfile != "":
         write_csv([computer.RecordId, computer.Name, computer.DNSHostName, str(computer.GUID),
                 str(computer.SID), computer.OSName, computer.OSVersion,
-                "=\"" + dsGetDSTimeStampStr(computer.WhenCreated) + "\"", "=\"" + dsGetDSTimeStampStr(computer.WhenChanged) + "\"",
+                dsGetDSTimeStampStr(computer.WhenCreated), dsGetDSTimeStampStr(computer.WhenChanged),
                 "", "", "", "", "", "", str(computer.DialInAccessPermission)
                 ])
     
@@ -132,8 +132,8 @@ def processComputer(computer):
             sys.stdout.write("\n\t" + rinfo.Name)
             sys.stdout.write("\n\tRecovery GUID: " + str(rinfo.RecoveryGUID))
             sys.stdout.write("\n\tVolume GUID:   " + str(rinfo.VolumeGUID))
-            sys.stdout.write("\n\tWhen created: " + dsGetDSTimeStampStr(rinfo.WhenCreated))
-            sys.stdout.write("\n\tWhen changed: " + dsGetDSTimeStampStr(rinfo.WhenChanged))
+            sys.stdout.write("\n\tCreated: " + dsGetDSTimeStampStr(rinfo.WhenCreated))
+            sys.stdout.write("\n\tChanged: " + dsGetDSTimeStampStr(rinfo.WhenChanged))
             sys.stdout.write("\n\tRecovery password: " + rinfo.RecoveryPassword)
             sys.stdout.write("\n\tFVE Key package:\n" + dump(unhexlify(rinfo.FVEKeyPackage),16, 16))
             sys.stdout.write("\n\n")
@@ -141,9 +141,9 @@ def processComputer(computer):
             if csvoutfile != "":
                 write_csv([computer.RecordId, computer.Name, computer.DNSHostName, str(computer.GUID),
                     str(computer.SID), computer.OSName, computer.OSVersion,
-                    "=\"" + dsGetDSTimeStampStr(computer.WhenCreated) + "\"", "=\"" + dsGetDSTimeStampStr(computer.WhenChanged) + "\"",
-                    rinfo.Name, str(rinfo.RecoveryGUID), str(rinfo.VolumeGUID), "=\"" + dsGetDSTimeStampStr(rinfo.WhenCreated) + "\"",
-                    "=\"" +dsGetDSTimeStampStr(rinfo.WhenChanged) + "\"", rinfo.RecoveryPassword
+                    dsGetDSTimeStampStr(computer.WhenCreated), dsGetDSTimeStampStr(computer.WhenChanged),
+                    rinfo.Name, str(rinfo.RecoveryGUID), str(rinfo.VolumeGUID), dsGetDSTimeStampStr(rinfo.WhenCreated),
+                    dsGetDSTimeStampStr(rinfo.WhenChanged), rinfo.RecoveryPassword
                     ])
 
     if suppcreddump == True:
@@ -271,11 +271,11 @@ if pwdump == True or pwhdump == True or suppcreddump == True:
     dsInitEncryption(syshive)
         
 if csvoutfile != "":
-    write_csv(["Record ID", "Computer name", "DNS name", "GUID",
-            "SID", "OS name", "OS version", "When created", "When changed",
+    write_csv(["DS Record ID", "Computer name", "DNS name", "GUID",
+            "SID", "OS name", "OS version", "Created", "Changed",
             "Bitlocker recovery name", "Bitlocker recovery GUID",
-            "Bitlocker volume GUID", "Bitlocker when created",
-            "Bitlocker when changed", "Bitlocker recovery password", "Dial-In Permission"
+            "Bitlocker volume GUID", "Bitlocker Created",
+            "Bitlocker Changed", "Bitlocker recovery password", "Dial-In Permission"
             ])
 
 sys.stdout.write("\n\nList of computers:")
