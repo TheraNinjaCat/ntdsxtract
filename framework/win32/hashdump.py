@@ -78,9 +78,9 @@ def sid_to_key(sid):
     s1 += chr((sid>>8) & 0xFF)
     s1 += chr((sid>>16) & 0xFF)
     s1 += chr((sid>>24) & 0xFF)
-    s1 += s1[0];
-    s1 += s1[1];
-    s1 += s1[2];
+    s1 += s1[0]
+    s1 += s1[1]
+    s1 += s1[2]
     s2 = s1[3] + s1[0] + s1[1] + s1[2]
     s2 += s2[0] + s2[1] + s2[2]
 
