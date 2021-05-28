@@ -46,7 +46,7 @@ def dsDecryptPEK(bootkey, enc_pek):
     md5.update(bootkey)
     for i in range(1000):
         md5.update(enc_pek[0:16])
-    rc4_key=md5.digest();
+    rc4_key=md5.digest()
     rc4 = ARC4.new(rc4_key)
     pek=rc4.encrypt(enc_pek[16:])
     #return pek[36:]
@@ -56,7 +56,7 @@ def dsDecryptWithPEK(pek, enc_hash):
     md5=MD5.new()
     md5.update(pek)
     md5.update(enc_hash[0:16])
-    rc4_key=md5.digest();
+    rc4_key=md5.digest()
     rc4 = ARC4.new(rc4_key)
     return rc4.encrypt(enc_hash[16:])
 
