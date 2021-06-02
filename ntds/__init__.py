@@ -19,6 +19,7 @@
 @contact:       csaba.barta@gmail.com
 '''
 
+from __future__ import print_function
 import sys
 
 debug = False
@@ -28,7 +29,7 @@ for arg in sys.argv:
         debug = True
 
 def simple_exception(type, value, traceback):
-    sys.stderr.write("[!] Error!", value, "\n")
+    print("[!] Error!", file=sys.stderr)
     sys.exit(1)
 
 if debug == False:

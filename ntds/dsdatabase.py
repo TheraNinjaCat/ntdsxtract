@@ -19,6 +19,7 @@
 @contact:       csaba.barta@gmail.com
 '''
 
+from __future__ import print_function
 import sys
 from stat import *
 from os import stat

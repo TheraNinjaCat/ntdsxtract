@@ -104,9 +104,19 @@ def dsGetPOSIXTimeStamp(dsTimeStamp):
 
 def dsGetDBLogTimeStampStr(dsDBLogTimeStamp):
     if len(dsDBLogTimeStamp) < 8:
-        return ""
+        return None
     (secs, mins, hours, days, months, years) = unpack('BBBBBBxx', dsDBLogTimeStamp)
-    return (1900 + years, months, days, hours, mins, secs)
+    if not (years and months and days):
+        return None
+    else:
+        return datetime.datetime(
+            years + 1900,
+            months,
+            days,
+            hours,
+            mins,
+            secs
+        )
 
 def dsGetDBTimeStampStr(dsDBTimeStamp):
     if len(dsDBTimeStamp) < 8:

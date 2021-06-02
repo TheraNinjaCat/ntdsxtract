@@ -22,17 +22,35 @@
 # Original hex dump code from
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/142812
 
+PY2_FILTER = "".join([chr(byte) if len(repr(chr(byte))) == 3 else "." for byte in range(256)])
+PY3_FILTER = b"".join([bytes([byte]) if len(repr(chr(byte))) == 3 else b"." for byte in range(256)])
+
+def to_printable(bin):
+    """Change a bytes object into a printable string"""
+    try:
+        printable = bin.translate(PY3_FILTER).decode("latin-1")
+    except ValueError:
+        printable = bin.translate(PY2_FILTER)
+    except:
+        import traceback, sys
+        traceback.print_exc()
+        sys.exit(1)
+    return printable
+
+
 def dump(src, length=8, indent=0):
-    FILTER=''.join([(len(repr(chr(x)))==3) and chr(x) or '.' for x in range(256)])
-    N=0; result=''
+    lines = []
+    count = 0
+    indent = " " * indent
     while src:
-        s,src = src[:length],src[length:]
-        hexa = ' '.join(["%02X"%ord(x) for x in s])
-        s = s.translate(FILTER)
-        istr = ""
-        if indent > 0:
-            for i in range(indent):
-                istr += " "
-        result += istr + "%04X   %-*s   %s\n" % (N, length*3, hexa, s)
-        N+=length
-    return result
+        line, src = src[:length], src[length:]
+        try:
+            hex_line = ' '.join(["{:02x}".format(byte) for byte in line])
+        except ValueError:
+            hex_line = ' '.join(["{:02x}".format(ord(byte)) for byte in line])
+        line = to_printable(line)
+        lines.append(
+            "{}{:04x}    {}    {}".format(indent, count, hex_line, line)
+        )
+        count += length
+    return "\n".join(lines)

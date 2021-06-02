@@ -20,56 +20,96 @@
 @contact:       csaba.barta@gmail.com
 '''
 
+from __future__ import print_function
+import argparse
+import datetime
+import binascii
+import struct
+
 import sys
-from struct import *
-from binascii import *
 import ntds.version
-from ntds.dstime import *
-from ntds.lib.dump import *
-import time
+from ntds.dstime import dsGetDBLogTimeStampStr
+from ntds.lib.dump import dump
 
-if len(sys.argv) < 2:
-    sys.stderr.write("\nDSFileInformation v" + str(ntds.version.version))
-    sys.stderr.write("\nExtracts information related to the NTDS.DIT database file")
-    sys.stderr.write("\n\nusage: %s <ntds.dit>\n" % sys.argv[0])
-    sys.stderr.write("\n\n  options:")
-    sys.stderr.write("\n    --debug")
-    sys.stderr.write("\n          Turn on detailed error messages and stack trace")
-    sys.exit(1)
+class NTDSHeader:
+    def __init__(self, header):
+        self.header = header
+        self.checksum = binascii.hexlify(header[0:4][::-1]).decode("utf-8")
+        self.signature = binascii.hexlify(header[4:8][::-1]).decode("utf-8")
+        self.file_format_version = binascii.hexlify(header[8:12][::-1]).decode("utf-8")
+        self.file_type = binascii.hexlify(header[12:16][::-1]).decode("utf-8")
+        self.db_time = binascii.hexlify(header[16:24][::-1]).decode("utf-8")
 
-sys.stderr.write("\n[+] Started at: %s" % time.strftime(
-                                        "%a, %d %b %Y %H:%M:%S UTC",
-                                        time.gmtime()))
+        self.creation_time = dsGetDBLogTimeStampStr(header[28:36])
+        self.consistent_time = dsGetDBLogTimeStampStr(header[64:72])
+        self.attach_time = dsGetDBLogTimeStampStr(header[72:80])
+        self.detach_time = dsGetDBLogTimeStampStr(header[88:96])
+        self.recovery_time = dsGetDBLogTimeStampStr(header[244:252])
 
-f = open(sys.argv[1], "rb", 0)
-header = f.read(8192)
+        self.w_major_version = struct.unpack("I", header[216:220])[0]
+        self.w_minor_version = struct.unpack("I", header[220:224])[0]
+        self.w_build_number = struct.unpack("I", header[224:228])[0]
+        self.w_service_pack = struct.unpack("I", header[228:232])[0]
 
-(pagesize, ) = unpack('I', header[236:240])
-(wmajorversion, ) = unpack('I', header[216:220])
-(wminorversion, ) = unpack('I', header[220:224])
-(wbuildnumber, )  = unpack('I', header[224:228])
-(wservicepack, )  = unpack('I', header[228:232])
+        self.page_size = struct.unpack('I', header[236:240])[0]
 
-print "Header checksum:     %s" % hexlify(header[:4][::-1])
-print "Signature:           %s" % hexlify(header[4:8][::-1])
-print "File format version: %s" % hexlify(header[8:12][::-1])
-print "File type:           %s" % hexlify(header[12:16][::-1])
-print "Page size:           %d bytes" % pagesize
-print "DB time:             %s" % hexlify(header[16:24][::-1])
-print "Windows version:     %d.%d (%d) Service pack %d" % (
-                                                       wmajorversion,
-                                                       wminorversion,
-                                                       wbuildnumber,
-                                                       wservicepack
-                                                       )
-print "Creation time: %04d.%02d.%02d %02d:%02d:%02d" % dsGetDBLogTimeStampStr(header[24:52][4:12])
-print "Attach time:   %04d.%02d.%02d %02d:%02d:%02d" % dsGetDBLogTimeStampStr(header[72:80])
-if unpack("B", header[88:96][:1]) == (0, ):
-    print "Detach time:   database is in dirty state"
-else:
-    print "Detach time:   %04d.%02d.%02d %02d:%02d:%02d" % dsGetDBLogTimeStampStr(header[88:96])
-print "Consistent time: %04d.%02d.%02d %02d:%02d:%02d" % dsGetDBLogTimeStampStr(header[64:72])
-print "Recovery time:   %04d.%02d.%02d %02d:%02d:%02d" % dsGetDBLogTimeStampStr(header[244:252])
-print "Header dump (first 672 bytes):"
-print dump(header[:672], 16, 4)
-f.close()
+    def __str__(self):
+        return "\n".join((
+            "Header checksum:     {}".format(self.checksum),
+            "Signature:           {}".format(self.signature),
+            "File format version: {}".format(self.file_format_version),
+            "File type:           {}".format(self.file_type),
+            "Page size:           {} bytes".format(self.page_size),
+            "DB time:             {}".format(self.db_time),
+            "Windows version:     {}.{} ({}) Service pack {}".format(
+                self.w_major_version,
+                self.w_minor_version,
+                self.w_build_number,
+                self.w_service_pack
+            ),
+            "Creation time:       {}".format(self.creation_time),
+            "Attach time:         {}".format(self.attach_time),
+            "Detach time:         {}".format(self.detach_time if self.detach_time else "database is in a dirty state"),
+            "Consistent time      {}".format(self.consistent_time),
+            "Recovery time:       {}".format(self.recovery_time),
+            "Header dump (first 672 bytes): ",
+            dump(self.header[:672], 16, 4)
+        ))
+
+
+def main():
+    """Main function for reading information from the ntds.dit file"""
+    args = parse_args()
+    
+    print("\n[+] Started at {}\n".format(datetime.datetime.now()), file=sys.stderr)
+
+    with open(args.ntds, "rb") as ntds_file:
+        ntds_header = NTDSHeader(ntds_file.read(8192))
+    
+    print(ntds_header, "\n")
+
+
+class CustomParser(argparse.ArgumentParser):
+    def error(self, message):
+        print("Error: {}\n".format(message), file=sys.stderr)
+        self.print_help()
+        sys.exit(2)
+
+
+def parse_args():
+    """Argument parsing"""
+    parser = CustomParser(
+        description="DSFileInformation v{}\nExtracts information related to the NTDS.DIT database file".format(ntds.version.version),
+        usage="%(prog)s <ntds.dit>",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+
+    parser.add_argument("ntds", help="NTDS.DIT database file.")
+    parser.add_argument("--debug", action="store_true", help="Turn on detailed error messages and stack trace")
+    parser.add_argument("--version", action="version", version="DSFileInformation v{}".format(ntds.version.version))
+
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    main()
