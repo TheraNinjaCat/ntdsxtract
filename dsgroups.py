@@ -135,8 +135,8 @@ if grpdump == True:
             user = None
         
 if csvoutfile != "":
-    write_csv(["Record ID", "Group name", "GUID", "SID", "When created",
-               "When changed", "Member object","Member SAMAccountName", "Member object GUID",
+    write_csv(["Record ID", "Group name", "GUID", "SID", "Created",
+               "Changed", "Member object","Member SAMAccountName", "Member object GUID",
                "Member object type", "Primary group of member",
                "Membership deletion time"
             ])
@@ -157,18 +157,18 @@ for recordid in dsMapLineIdByRecordId:
             group = None
             continue
         
-        sys.stdout.write("\nRecord ID:    %d" % group.RecordId)
+        sys.stdout.write("\nDS Record ID:    %d" % group.RecordId)
         sys.stdout.write("\nGroup Name:   %s" % group.Name)
         sys.stdout.write("\nGUID:         %s" % str(group.GUID))
         sys.stdout.write("\nSID:          %s" % str(group.SID))
-        sys.stdout.write("\nWhen created: %s" % dsGetDSTimeStampStr(group.WhenCreated))
-        sys.stdout.write("\nWhen changed: %s" % dsGetDSTimeStampStr(group.WhenChanged))
+        sys.stdout.write("\nCreated: %s" % dsGetDSTimeStampStr(group.WhenCreated))
+        sys.stdout.write("\nChanged: %s" % dsGetDSTimeStampStr(group.WhenChanged))
         
         # The main group record
         if csvoutfile != "":
             write_csv([group.RecordId, group.Name, str(group.GUID),
-                str(group.SID), "'" + dsGetDSTimeStampStr(group.WhenCreated),
-                "'" + dsGetDSTimeStampStr(group.WhenChanged),
+                str(group.SID), dsGetDSTimeStampStr(group.WhenCreated),
+                dsGetDSTimeStampStr(group.WhenChanged),
                 "", "", "" ])
         
         if grpdump == True:
@@ -178,8 +178,8 @@ for recordid in dsMapLineIdByRecordId:
                     if u.PrimaryGroupID == group.SID.RID:
                         if csvoutfile != "":
                             write_csv([group.RecordId, group.Name, str(group.GUID),
-                                    str(group.SID), "=\"" + dsGetDSTimeStampStr(group.WhenCreated) + "\"",
-                                    "=\"" + dsGetDSTimeStampStr(group.WhenChanged) + "\"",
+                                    str(group.SID), dsGetDSTimeStampStr(group.WhenCreated),
+                                    dsGetDSTimeStampStr(group.WhenChanged),
                                     u.Name, u.SAMAccountName, str(u.GUID), u.Type, "Y", ""
                                     ])
                         sys.stdout.write("\n\t%s (%s) (%s) (P)" % (u.Name, str(u.GUID), u.Type))
@@ -195,17 +195,17 @@ for recordid in dsMapLineIdByRecordId:
                 if deltime == -1:
                     if csvoutfile != "":
                         write_csv([group.RecordId, group.Name, str(group.GUID),
-                            str(group.SID), "=\"" + dsGetDSTimeStampStr(group.WhenCreated) + "\"",
-                            "=\"" + dsGetDSTimeStampStr(group.WhenChanged) + "\"",
+                            str(group.SID), dsGetDSTimeStampStr(group.WhenCreated),
+                            dsGetDSTimeStampStr(group.WhenChanged),
                             member.Name, member.SAMAccountName, str(member.GUID), member.Type, "N", ""
                             ])
                     sys.stdout.write("\n\t%s (%s) (%s)" % (member.Name, str(member.GUID), member.Type))
                 else:
                     if csvoutfile != "":
                         write_csv([group.RecordId, group.Name, str(group.GUID),
-                            str(group.SID), "=\"" + dsGetDSTimeStampStr(group.WhenCreated) + "\"",
-                            "=\"" + dsGetDSTimeStampStr(group.WhenChanged) + "\"",
-                            member.Name, member.SAMAccountName, str(member.GUID), member.Type, "N", "=\"" + dsGetDSTimeStampStr(dsConvertToDSTimeStamp(deltime)) + "\""
+                            str(group.SID), dsGetDSTimeStampStr(group.WhenCreated),
+                            dsGetDSTimeStampStr(group.WhenChanged),
+                            member.Name, member.SAMAccountName, str(member.GUID), member.Type, "N", dsGetDSTimeStampStr(dsConvertToDSTimeStamp(deltime))
                             ])
                     sys.stdout.write("\n\t%s (%s) (%s) - Deleted: %s" % (member.Name, 
                                                                          str(member.GUID), 

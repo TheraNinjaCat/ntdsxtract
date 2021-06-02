@@ -54,7 +54,7 @@ def usage():
     sys.stderr.write("\n    --debug")
     sys.stderr.write("\n       Turn on detailed error messages and stack trace")
     sys.stderr.write("\n\nFields of the default output")
-    sys.stderr.write("\n    Timestamp|Action|Record ID|Obj. name|Obj. type")
+    sys.stderr.write("\n    Timestamp|Action|DS Record ID|Obj. name|Obj. type")
     sys.stderr.write("\n")
 
 if len(sys.argv) < 2:
@@ -103,7 +103,7 @@ wd = ensure_dir(sys.argv[2])
 # Check the output file
 if outfile != "" and csvformat == True:
     init_csv(path.join(wd, outfile))
-    write_csv(["Timestamp", "Event", "Record ID", "Object name",
+    write_csv(["Timestamp", "Timestamp_desc", "DS Record ID", "Object name",
                    "Object type"
             ])
 
@@ -248,8 +248,7 @@ for item in timeline:
                                        type
                                        ))
         if outfile != "":
-            write_csv(["=\"" + dsGetDSTimeStampStr(timestamp) + "\"", action, id, name,
-                       type
+            write_csv([dsGetDSTimeStampStr(timestamp), action, id, name, type
                 ])
         
 sys.stdout.write("\n")
