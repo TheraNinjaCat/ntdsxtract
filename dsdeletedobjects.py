@@ -31,7 +31,7 @@ from ntds.lib.fs import *
 import time
 from os import path
 
-if len(sys.argv) < 3 or len(sys.argv) > 6:
+def usage():
     sys.stderr.write("\nDSDeletedObjects v" + str(ntds.version.version))
     sys.stderr.write("\nExtracts information related to deleted objects")
     sys.stderr.write("\n\nusage: %s <datatable> <work directory> [option]" % sys.argv[0])
@@ -52,6 +52,9 @@ if len(sys.argv) < 3 or len(sys.argv) > 6:
     sys.stderr.write("\n\nFields of the main output")
     sys.stderr.write("\n    Rec. ID|Cr. time|Mod. time|Obj. name|Orig. container name\n")
     sys.stderr.flush()
+    
+if len(sys.argv) not in range(4, 7):
+    usage()
     sys.exit(1)
 
 of = ""
@@ -123,7 +126,7 @@ if useID == False:
         try:
             container = dsObject(db, crecid)
         except:
-            sys.stderr.write("\n[!] Unable to instantiate container object (record id: %d)" % crecdid)
+            sys.stderr.write("\n[!] Unable to instantiate container object (record id: %d)" % crecid)
             continue
         if container == None:
             continue
